@@ -23,7 +23,7 @@ use Spreadsheet::ParseExcel;
 use Spreadsheet::ParseExcel::Utility qw/int2col/;
 use Variable::Alias qw/alias/;
 
-our $VERSION = "0.03";
+our $VERSION = "0.4";
 
 
 #--Define global variables-------------------------------------------------
@@ -120,7 +120,7 @@ sub loop_xls {
       $ROW = $row + 1;
       if ($args{autosplit}) {
         @F = map {$_ && $_->Value() || undef} @{$worksheet->{Cells}[$row]};
-        @F = map {chomp;$_} @F if ($args{autoline});
+        @F = map {$_ && chomp;$_} @F if ($args{autoline});
         
         # Make the %F hash an alias for @F, i.e. $F{A} == $F[0]
         for (0 .. $#F) {
@@ -231,7 +231,7 @@ sub XLSprint {
 
 #--------------------------------------------------------------------------
 
-=head1 TITLE
+=head1 NAME
 
 XLSperl - use Perl "one-liners" with Microsoft Excel files
 
