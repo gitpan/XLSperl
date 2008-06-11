@@ -16,14 +16,15 @@
 
 use strict;
 use warnings;
-use open IN => ":bytes";
+use bytes;
+use open IN => ":raw";
 use Getopt::Long;
 use IO::Handle;
 use Spreadsheet::ParseExcel;
 use Spreadsheet::ParseExcel::Utility qw/int2col/;
 use Variable::Alias qw/alias/;
 
-our $VERSION = "0.4";
+our $VERSION = "0.6";
 
 
 #--Define global variables-------------------------------------------------
@@ -74,11 +75,8 @@ sub make_loop {
     while (my $data = $next_file->()) {
       my $excel = Spreadsheet::ParseExcel::Workbook->Parse(\$data);
       if ($excel->{Worksheet}) {
-        #warn "Found an Excel file...\n";
-        #print Dumper(\$excel);
         loop_xls(%args, xls=>$excel);
       } else {
-        #warn "Not an Excel file...\n";
         if (open my $fh,'<',\$data) {
           loop_text(%args, fh=>$fh);
         }

@@ -1,0 +1,6 @@
+Changelog for XLSperl
+=====================
+
+0.6 - 11-June-2008
+Fixed compatibility problem with Windows which was causing some
+spreadsheets to fail with a "PPS:67" error.
