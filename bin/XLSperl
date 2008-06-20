@@ -2,7 +2,7 @@
 
 # XLSperl - use "perl -e" commands with Microsoft Excel files
 #
-# Copyright (C) 2007 Jon Allen <jj@jonallen.info>
+# Copyright (C) 2007-2008 Jon Allen <jj@jonallen.info>
 #
 # This software is licensed under the terms of the Artistic
 # License version 2.0.
@@ -24,7 +24,7 @@ use Spreadsheet::ParseExcel;
 use Spreadsheet::ParseExcel::Utility qw/int2col/;
 use Variable::Alias qw/alias/;
 
-our $VERSION = "0.6";
+our $VERSION = "0.7";
 
 
 #--Define global variables-------------------------------------------------
@@ -38,7 +38,15 @@ MAIN: {
   my %options;
   Getopt::Long::Configure('bundling');
   GetOptions( \%options, qw/e=s l n p x a F=s w/,
-    'v' => sub{ print "This is XLSperl, version $VERSION\n"; exit } );
+    'm=s' => sub{ eval qq{use $_[1] ()}; die $@ if $@;},
+    'M=s' => sub{ my ($m,$a) = split /=/,$_[1],2;
+                  if ($a) {
+                    eval qq{use $m split(/,/,q{$a})}; die $@ if $@;
+                  } else {
+                    eval qq{use $m}; die $@ if $@;
+                  }
+                },
+    'v'   => sub{ print "This is XLSperl, version $VERSION\n"; exit } );
   die(qq{Usage: $0 [options] -e "code" <file.xls>\n}) unless ($options{e});
   
   no strict 'refs';
@@ -93,7 +101,6 @@ sub make_loop {
 #--------------------------------------------------------------------------
 
 sub file_iterator {
-  #warn "File iterator called\n";
   return sub {
     local $/ = undef;
     my $file = <>;
@@ -302,6 +309,13 @@ Prints the value of $_ after each iteration of the input loop
 
 Perl code to execute on each iteration of the input loop (required)
 
+=item -m
+
+=item -M
+
+The C<-m> and C<-M> options load additional modules into XLSperl in the
+same way as the C<-m> and C<-M> options to C<perl> (see L<http://perldoc.perl.org/perlrun.html>.
+
 =item -w
 
 Enables warnings
@@ -388,6 +402,10 @@ function should not be used on that filehandle, i.e. do not do this:
 
  XLSperl -nale 'print join ",",@F' file.xls >file.csv
 
+=item More correct conversion from XLS to CSV (thanks to Sam Vilain):
+
+ XLSperl -MText::CSV_XS -nale 'BEGIN{$c=Text::CSV_XS->new} if ($w ne $WS){open CSV,">$ARGV.$WS.csv" or die $!;$w = $WS} $c->print(\*CSV,\@F)' file1.xls file2.xls
+
 =item Extract a single row from a spreadsheet
 
  cat file1.xls | XLSperl -nle 'print if ($ROW == 2)'
@@ -415,7 +433,7 @@ Microsoft Windows (tested on Windows XP SP 2)
 
 =item *
 
-Mac OS X (tested on OS X 10.4.9, Intel CPU only)
+Mac OS X (tested on OS X 10.5.3, Intel CPU only)
 
 =back
 
@@ -437,7 +455,7 @@ Variable::Alias (tested with version 0.01)
 
 =back
 
-XLSperl has been tested with Perl version 5.8.8.
+XLSperl has been tested with Perl versions 5.8.8 and 5.10.0.
 
 =head1 TODO
 
